@@ -682,7 +682,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
     try {
       const encodeMessage = this._callMessage.encode(message)
       await this.callMessageManager.sendMessage(uid.toString(), encodeMessage)
-      logger.debug(`send message to uid:${uid} `, encodeMessage)
+      logger.debug(`message send uid:${uid} `, encodeMessage)
     } catch (e) {
       this._callEventChange(CallEvent.messageFailed)
       this._callError(
