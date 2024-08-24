@@ -6,7 +6,6 @@ import {
   setLogLevel,
   createMicrophoneAndCameraTracks,
 } from "agora-rtc-sdk-ng/esm"
-import { v4 as uuidv4 } from "uuid"
 import { CallInfo } from "./callInfo"
 import { CallMessage } from "./callMessage"
 import {
@@ -32,6 +31,7 @@ import {
   serializeHTMLElement,
   LOCAL_VIEW_ELEMENT,
   REMOTE_VIEW_ELEMENT,
+  uuidv4,
 } from "../common"
 
 enableLogUpload()
@@ -682,7 +682,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
     try {
       const encodeMessage = this._callMessage.encode(message)
       await this.callMessageManager.sendMessage(uid.toString(), encodeMessage)
-      logger.debug(`send message to uid:${uid} `, encodeMessage)
+      logger.debug(`message send uid:${uid} `, encodeMessage)
     } catch (e) {
       this._callEventChange(CallEvent.messageFailed)
       this._callError(

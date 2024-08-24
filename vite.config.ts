@@ -1,9 +1,20 @@
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { name } from "./package.json"
 
-export default defineConfig({
-	plugins: [sveltekit()],
-	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}']
-	}
-});
+const genBaseUrl = (mode: string) => {
+  if (mode == "production") {
+    return `/${name}/`
+  }
+  return "/"
+}
+
+
+export default defineConfig(({ mode }) => {
+  return {
+    base: genBaseUrl(mode),
+    plugins: [
+      react()
+    ],
+  }
+})

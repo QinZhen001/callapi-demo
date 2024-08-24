@@ -42,8 +42,10 @@ export interface IPrepareConfig {
   /** 视频track配置 */
   videoConfig?: CameraVideoTrackInitConfig
   /**
-   * 接通状态是否禁止等待首帧
+   * 接通状态是否禁止等待首帧 
+   * 
    * true:是，主叫收到接受消息即认为通话成功，被叫点击接受即认为通话成功，注意，使用该方式可能会造成无音视频权限时也能接通，以及接通时由于弱网等情况看不到画面
+   *
    * false: 否，会等待音频首帧（音频呼叫）或视频首帧(视频呼叫)
    */
   firstFrameWaittingDisabled?: boolean
@@ -299,13 +301,13 @@ export enum LogLevel {
   ERROR = 2,
 }
 
-/** 本地音频轨/视频轨 */
+/** 本地用户轨道 */
 export interface ILocalTracks {
   videoTrack?: ICameraVideoTrack
   audioTrack?: IMicrophoneAudioTrack
 }
 
-/** 远端音频轨/视频轨 */
+/** 远端用户轨道 */
 export interface IRemoteTracks {
   videoTrack?: IRemoteVideoTrack
   audioTrack?: IRemoteAudioTrack
