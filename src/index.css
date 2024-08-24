@@ -6,3 +6,13 @@ html, body {
 .item {
   padding: 5px;
 }
+
+
+.hidden {
+  visibility: hidden;
+  z-index: 1;
+}
+
+button+button {
+  margin-left: 5px;
+}

@@ -2,6 +2,8 @@ import { RTMConfig } from "agora-rtm"
 
 export const APPID = import.meta.env.VITE_AGORA_APP_ID
 export const APPCERTIFICATE = import.meta.env.VITE_AGORA_APP_CERTIFICATE
+export const DEFAULT_VIDEO_ENCODER_CONFIG = "720p_2"
+export const CALL_TIMEOUT_MILLISECOND = 15 * 1000 // ms
 export const DEFAULT_RTM_CONFIG: RTMConfig = {
   logLevel: "error",
   logUpload: true,
@@ -37,4 +39,13 @@ export const apiGenerateToken = async (
   }) as unknown as any
   resp = (await resp.json()) || {}
   return resp?.data?.token || null
+}
+
+
+export const genUUID = () => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0
+    const v = c === "x" ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
 }
