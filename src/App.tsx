@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react"
 import {
-  getRandomUid, apiGenerateToken,
-  genUUID, DEFAULT_RTM_CONFIG, APPID, APPCERTIFICATE,
+  getRandomUid, apiGenerateToken, isMobile,
+  uuidv4, DEFAULT_RTM_CONFIG, APPID, APPCERTIFICATE,
   CALL_TIMEOUT_MILLISECOND, DEFAULT_VIDEO_ENCODER_CONFIG,
 } from "./utils"
 import { createClient, IAgoraRTCClient } from "agora-rtc-sdk-ng/esm"
@@ -11,9 +11,13 @@ import {
   CallErrorCodeType, CallStateReason, CallErrorEvent
 } from "./callApi"
 import { message } from 'antd';
+import VConsole from "vconsole"
+
+if (isMobile()) {
+  const vConsole = new VConsole()
+}
 
 const { RTM } = AgoraRTM
-const localUserId = getRandomUid()
 let rtcClient: IAgoraRTCClient
 let rtmClient
 let callApi: CallApi
@@ -27,6 +31,7 @@ export enum Role {
 }
 
 function App() {
+  const [localUserId, setLocalUserId] = useState(getRandomUid())
   const [remoteUserId, setRemoteUserId] = useState(0)
   const [firstFrameWaittingDisabled, setFirstFrameWaittingDisabled] = useState(false)
   const [state, setState] = useState(CallStateType.idle)
@@ -75,7 +80,7 @@ function App() {
     addCallApiEventListener()
     // first prepareForCall
     callApi.prepareForCall({
-      roomId: genUUID(),
+      roomId: uuidv4(),
       rtcToken: token,
       // must in dom
       localView: document.getElementById("local-view")!,
@@ -154,6 +159,13 @@ function App() {
   }
 
   const call = async () => {
+    if (!checkRemoteUserId()) {
+      return
+    }
+    // prepareForCall update roomId
+    callApi.prepareForCall({
+      roomId: uuidv4(),
+    })
     await callApi.call(remoteUserId)
   }
 
@@ -162,39 +174,61 @@ function App() {
   }
 
   const accept = async () => {
+    if (!checkRemoteUserId()) {
+      return
+    }
     await callApi.accept(remoteUserId)
   }
 
   const reject = async () => {
+    if (!checkRemoteUserId()) {
+      return
+    }
     await callApi.reject(remoteUserId)
   }
 
   const hangup = async () => {
+    if (!checkRemoteUserId()) {
+      return
+    }
     await callApi.hangup(remoteUserId)
   }
 
+  const checkRemoteUserId = () => {
+    if (!remoteUserId) {
+      message.error("please input remoteUserId!")
+      return false
+    }
+
+    return true
+  }
+
   return <div>
-    <div className="item">Local UserId: {localUserId}</div>
+    <div className="item">localUserId: {localUserId}</div>
     <div className="item">
-      Remote UserId: <input type="text" value={remoteUserId} onChange={onChange} />
+      remoteUserId: <input type="text" value={remoteUserId} onChange={onChange} />
     </div>
     <div className="item">
       <button onClick={onClickFirstFrameWaittingDisabled}>音频首帧与接通相关 {String(!firstFrameWaittingDisabled)}</button>
     </div>
     <div className="item">
-      <button onClick={call}>call 呼叫</button>
-      <button onClick={cancelCall}>cancelCall 取消呼叫</button>
-      <button onClick={accept}>accept 接受</button>
-      <button onClick={reject}>reject 拒绝</button>
-      <button onClick={hangup}>hangup 挂断</button>
+      {state == CallStateType.prepared ? <button onClick={call}>call 呼叫</button> : null}
+      {state == CallStateType.calling && role == Role.Caller ? <button onClick={cancelCall}>cancelCall 取消呼叫</button> : null}
+      {state == CallStateType.calling && role == Role.Called ? <button onClick={accept}>accept 接受</button> : null}
+      {state == CallStateType.calling && role == Role.Called ? <button onClick={reject}>reject 拒绝</button> : null}
+      {state !== CallStateType.prepared && state !== CallStateType.idle ? <button onClick={hangup}>hangup 挂断</button> : null}
     </div>
-    <div className="stream-section">
-      <div className="localUser">
-        <span>localUser:{ }</span>
+    {state == CallStateType.connected ?
+      <div className="item">
+        RTC 频道号: {callApi.roomId}
+      </div> : null}
+    <div className={`stream-section ${state !== CallStateType.connected ? "hidden" : ""}`} >
+      <div className="local">
+        <span className="text">localUserId:{localUserId}</span>
         <div id="local-view"></div>
       </div>
-      <div className="remoteUser">
-        <span>remoteUser:{ }</span>
+      <div className="remote">
+        <span className="text">remoteUserId:{remoteUserId}</span>
         <div id="remote-view"></div>
       </div>
     </div>

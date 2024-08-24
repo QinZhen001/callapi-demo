@@ -2,6 +2,7 @@ import { RTMClient } from "agora-rtm"
 import { CallMessageManager } from "./base"
 import { decodeUint8Array, encodeUint8Array } from "../common"
 
+/** RTM消息管理器配置 */
 export interface ICallRtmMessageManagerConfig {
   appId: string
   userId: number

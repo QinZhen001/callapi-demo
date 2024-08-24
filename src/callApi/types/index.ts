@@ -299,13 +299,13 @@ export enum LogLevel {
   ERROR = 2,
 }
 
-/** 本地音频轨/视频轨 */
+/** 本地用户轨道 */
 export interface ILocalTracks {
   videoTrack?: ICameraVideoTrack
   audioTrack?: IMicrophoneAudioTrack
 }
 
-/** 远端音频轨/视频轨 */
+/** 远端用户轨道 */
 export interface IRemoteTracks {
   videoTrack?: IRemoteVideoTrack
   audioTrack?: IRemoteAudioTrack
