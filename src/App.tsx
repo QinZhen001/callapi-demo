@@ -166,32 +166,53 @@ function App() {
     callApi.prepareForCall({
       roomId: uuidv4(),
     })
-    await callApi.call(remoteUserId)
+    try {
+      await callApi.call(remoteUserId)
+    } catch (e: any) {
+      message.error(`call failed! ${e.message}`)
+    }
   }
 
   const cancelCall = async () => {
-    await callApi.cancelCall()
+    try {
+      await callApi.cancelCall()
+    } catch (e: any) {
+      message.error(`cancelCall failed! ${e.message}`)
+    }
   }
 
   const accept = async () => {
     if (!checkRemoteUserId()) {
       return
     }
-    await callApi.accept(remoteUserId)
+    try {
+      await callApi.accept(remoteUserId)
+    } catch (e: any) {
+      message.error(`accept failed! ${e.message}`)
+    }
   }
 
   const reject = async () => {
     if (!checkRemoteUserId()) {
       return
     }
-    await callApi.reject(remoteUserId)
+    try {
+      await callApi.reject(remoteUserId)
+    } catch (e: any) {
+      message.error(`reject failed! ${e.message}`)
+    }
   }
 
   const hangup = async () => {
     if (!checkRemoteUserId()) {
       return
     }
-    await callApi.hangup(remoteUserId)
+    try {
+      await callApi.hangup(remoteUserId)
+    } catch (e: any) {
+      message.error(`hangup failed! ${e.message}`)
+    }
+
   }
 
   const checkRemoteUserId = () => {
@@ -222,7 +243,7 @@ function App() {
       <div className="item">
         RTC 频道号: {callApi.roomId}
       </div> : null}
-    <div className={`stream-section ${state !== CallStateType.connected ? "hidden" : ""}`} >
+    <div className={`stream-section ${state !== CallStateType.connected ? "hidden" : ""} `} >
       <div className="local">
         <span className="text">localUserId:{localUserId}</span>
         <div id="local-view"></div>

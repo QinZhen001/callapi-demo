@@ -29,15 +29,21 @@ class Logger {
   }
 
   debug(...args: any[]) {
-    this.level <= LogLevel.DEBUG && this._log(...args)
+    if (this.level <= LogLevel.DEBUG) {
+      this._log(...args);
+    }
   }
 
   warn(...args: any[]) {
-    this.level <= LogLevel.WARN && this._warn(...args)
+    if (this.level <= LogLevel.WARN) {
+      this._warn(...args);
+    }
   }
 
   error(...args: any[]) {
-    this.level <= LogLevel.ERROR && this._err(...args)
+    if (this.level <= LogLevel.ERROR) {
+      this._err(...args);
+    }
   }
 
   time(...args: any[]) {
@@ -50,11 +56,12 @@ class Logger {
       start = "start"
     }
     this.preTime = time
-    this.level <= LogLevel.DEBUG &&
+    if (this.level <= LogLevel.DEBUG) {
       this._log(
         `${this._genPrefix()}[time]:  -------------- cost:${cost}ms ${start} -----------------   \n`,
         ...args,
-      )
+      );
+    }
   }
 
   timeEnd(...args: any[]) {
@@ -64,11 +71,12 @@ class Logger {
       cost = time - this.preTime
     }
     this.preTime = 0
-    this.level <= LogLevel.DEBUG &&
+    if (this.level <= LogLevel.DEBUG) {
       this._log(
         `${this._genPrefix()}[time]:  -------------- cost:${cost}ms end -----------------   \n`,
         ...args,
-      )
+      );
+    }
   }
 
   //  ---------------------------- private ----------------------------

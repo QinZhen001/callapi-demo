@@ -162,6 +162,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
       this.callType == CallType.video
         ? CallAction.VideoCall
         : CallAction.AudioCall
+    this._autoCancelCall()
     await Promise.all([
       this._rtcJoinAndPublish(),
       this._publishMessage(remoteUserId, {
@@ -173,7 +174,6 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
     ])
     this._callInfo.add("remoteUserRecvCall")
     this._callEventChange(CallEvent.remoteUserRecvCall)
-    this._autoCancelCall()
     logger.debug(`call success,remoteUserId:${remoteUserId}`)
   }
 
@@ -278,6 +278,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
       }
     } catch (e) {
       this._callError(CallErrorEvent.rtcOccurError, CallErrorCodeType.rtc, e)
+      throw e
     }
     this._resetData()
     logger.debug(`destory success`)
@@ -345,6 +346,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
     this._callMessage.setCallId(callId)
     this.remoteUserId = Number(fromUserId)
     this.prepareConfig.roomId = fromRoomId
+    this._autoCancelCall()
     this._callStateChange(
       CallStateType.calling,
       CallStateReason.remoteVideoCall,
@@ -462,6 +464,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
       await this._rtcPublish()
     } catch (err) {
       this._callError(CallErrorEvent.rtcOccurError, CallErrorCodeType.rtc, err)
+      throw err
     }
   }
 
@@ -548,15 +551,9 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
       } else if (mediaType == "audio") {
         const remoteAudioTrack = user.audioTrack
         this.remoteTracks.audioTrack = remoteAudioTrack
-        if (
-          this.state == CallStateType.connected &&
-          this.prepareConfig.firstFrameWaittingDisabled
-        ) {
-          // 如果首帧不关联,有可能会导致有加频道前变成connected,这个时候没有声音
-          // 这种情况下这里需要主动播放声音
-          logger.debug(
-            "play remote audio track when firstFrameWaittingDisabled",
-          )
+        if (this.state == CallStateType.connected) {
+          // 有可能先connected再收到远端音频流
+          // 这种情况下需要主动播放远端音频流声音
           this._playRemoteAudio()
         }
       }
@@ -607,18 +604,22 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
           this.state == CallStateType.calling ||
           this.state == CallStateType.connecting
         ) {
-          await this._publishMessage(this.remoteUserId, {
-            fromUserId: this.callConfig.userId,
-            remoteUserId: this.remoteUserId,
-            message_action: CallAction.Cancel,
-            cancelCallByInternal: RejectByInternal.Internal,
-          })
-          await this.destory()
           this._callStateChange(
             CallStateType.prepared,
             CallStateReason.callingTimeout,
           )
-          logger.debug(`call timeout auto cancel call success`)
+          try {
+            await this._publishMessage(this.remoteUserId, {
+              fromUserId: this.callConfig.userId,
+              remoteUserId: this.remoteUserId,
+              message_action: CallAction.Cancel,
+              cancelCallByInternal: RejectByInternal.Internal,
+            })
+            logger.debug(`auto cancelCall success`)
+          } catch (e: any) {
+            logger.error(`auto cancelCall failed! ${e?.message}`)
+          }
+          await this.destory()
         }
       }, time)
     }
@@ -690,6 +691,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
         CallErrorCodeType.message,
         e,
       )
+      throw e
     }
   }
 
