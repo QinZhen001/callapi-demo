@@ -125,6 +125,7 @@ function App() {
       // handle call event if needed
     })
     callApi.on("callError", (errorEvent, errorType, errorCode, errMessage) => {
+      debugger
       switch (errorType) {
         case CallErrorCodeType.normal:
           // 常规错误
@@ -167,8 +168,12 @@ function App() {
       roomId: uuidv4(),
     })
     try {
+      debugger
       await callApi.call(remoteUserId)
+      debugger
+      console.log("call success")
     } catch (e: any) {
+      debugger
       message.error(`call failed! ${e.message}`)
     }
   }

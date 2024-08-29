@@ -3,7 +3,7 @@ import { RTMConfig } from "agora-rtm"
 export const APPID = import.meta.env.VITE_AGORA_APP_ID
 export const APPCERTIFICATE = import.meta.env.VITE_AGORA_APP_CERTIFICATE
 export const DEFAULT_VIDEO_ENCODER_CONFIG = "720p_2"
-export const CALL_TIMEOUT_MILLISECOND = 15 * 1000 // ms
+export const CALL_TIMEOUT_MILLISECOND = 30 * 1000 // ms
 export const DEFAULT_RTM_CONFIG: RTMConfig = {
   logLevel: "error",
   logUpload: true,

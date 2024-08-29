@@ -162,15 +162,16 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
       this.callType == CallType.video
         ? CallAction.VideoCall
         : CallAction.AudioCall
-    this._autoCancelCall()
+
     await Promise.all([
-      this._rtcJoinAndPublish(),
-      this._publishMessage(remoteUserId, {
-        fromUserId: this.callConfig.userId,
-        remoteUserId,
-        fromRoomId: this.prepareConfig?.roomId,
-        message_action: callAction,
-      }),
+      this._autoCancelCall(),
+      // this._rtcJoinAndPublish(),
+      // this._publishMessage(remoteUserId, {
+      //   fromUserId: this.callConfig.userId,
+      //   remoteUserId,
+      //   fromRoomId: this.prepareConfig?.roomId,
+      //   message_action: callAction,
+      // }),
     ])
     this._callInfo.add("remoteUserRecvCall")
     this._callEventChange(CallEvent.remoteUserRecvCall)
@@ -590,39 +591,47 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
   }
 
   private async _autoCancelCall() {
-    if (!this.remoteUserId) {
-      return
-    }
-    const time = this.prepareConfig?.callTimeoutMillisecond
-    if (time) {
-      if (this._cancelCallTimer) {
-        clearTimeout(this._cancelCallTimer)
-        this._cancelCallTimer = null
+    return new Promise<void>((resolve, reject) => {
+      if (!this.remoteUserId) {
+        debugger
+        return resolve()
       }
-      this._cancelCallTimer = setTimeout(async () => {
-        if (
-          this.state == CallStateType.calling ||
-          this.state == CallStateType.connecting
-        ) {
-          this._callStateChange(
-            CallStateType.prepared,
-            CallStateReason.callingTimeout,
-          )
-          try {
-            await this._publishMessage(this.remoteUserId, {
-              fromUserId: this.callConfig.userId,
-              remoteUserId: this.remoteUserId,
-              message_action: CallAction.Cancel,
-              cancelCallByInternal: RejectByInternal.Internal,
-            })
-            logger.debug(`auto cancelCall success`)
-          } catch (e: any) {
-            logger.error(`auto cancelCall failed! ${e?.message}`)
-          }
-          await this.destory()
+      const time = this.prepareConfig?.callTimeoutMillisecond
+      if (time) {
+        if (this._cancelCallTimer) {
+          clearTimeout(this._cancelCallTimer)
+          this._cancelCallTimer = null
         }
-      }, time)
-    }
+        this._cancelCallTimer = setTimeout(async () => {
+          if (
+            this.state == CallStateType.calling ||
+            this.state == CallStateType.connecting
+          ) {
+            this._callStateChange(
+              CallStateType.prepared,
+              CallStateReason.callingTimeout,
+            )
+            try {
+              debugger
+              await this._publishMessage(this.remoteUserId, {
+                fromUserId: this.callConfig.userId,
+                remoteUserId: this.remoteUserId,
+                message_action: CallAction.Cancel,
+                cancelCallByInternal: RejectByInternal.Internal,
+              })
+              await this.destory()
+              logger.debug(`auto cancelCall success`)
+              resolve()
+            } catch (e: any) {
+              debugger
+              logger.error(`auto cancelCall failed! ${e?.message}`)
+              return reject(e)
+            }
+          }
+        }, time)
+      }
+      resolve()
+    })
   }
 
   private async _rtcJoin() {
@@ -637,7 +646,9 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
     if (!rtcToken) {
       throw new Error("rtcToken is undefined")
     }
+    debugger
     await this.rtcClient?.join(appId, roomId, rtcToken, userId)
+    debugger
     logger.debug(`rtc join success,roomId:${roomId},userId:${userId}`)
     this._rtcJoined = true
     this._callEventChange(CallEvent.localJoin)
