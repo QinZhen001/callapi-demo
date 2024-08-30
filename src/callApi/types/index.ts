@@ -182,6 +182,15 @@ export enum CallEvent {
   remoteVideoCall = 142,
   /** 远端发起音频呼叫 */
   remoteAudioCall = 143,
+  // for web
+  /** 已经加入rtc */
+  hasJoined = 20000,
+  /** 未连接状态 */
+  connectionStateNonConnected = 20001,
+  /** 已发布 */
+  hasPublished = 20002,
+  /** 没有轨道 */
+  noTrack = 20003,
 }
 
 /**

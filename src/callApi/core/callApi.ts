@@ -631,6 +631,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
 
   private async _rtcJoin() {
     if (this._rtcJoined) {
+      this._callEventChange(CallEvent.hasJoined)
       return logger.warn("rtc has joined")
     }
     const { appId, userId } = this.callConfig
@@ -666,6 +667,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
       if (connectionState !== "CONNECTED") {
         const msg = "rtcClient connectionState is not CONNECTED"
         logger.warn(msg)
+        this._callEventChange(CallEvent.connectionStateNonConnected)
         return
       }
       if (!this._rtcPublished) {
@@ -679,10 +681,12 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
       } else {
         const msg = "rtc has published"
         logger.warn(msg)
+        this._callEventChange(CallEvent.hasPublished)
       }
     } else {
       const msg = "videoTrack or audioTrack is undefined"
       logger.error(msg)
+      this._callEventChange(CallEvent.noTrack)
       throw new Error(msg)
     }
   }
