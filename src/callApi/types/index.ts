@@ -129,23 +129,17 @@ export enum CallEvent {
   /** 销毁 */
   deinitialize = 1,
   /** 没有收到消息回执 */
-  missingReceipts = 2,
+  // missingReceipts = 2,
   /** 呼叫超时 */
   callingTimeout = 3,
-  /** 加入RTC失败 */
-  joinRTCFailed = 4,
+  /** 远端呼叫超时 */
+  remoteCallingTimeout = 4,
   /** 加入RTC成功 */
   joinRTCSuccessed = 5,
-  /** 设置RTM失败 */
-  rtmSetupFailed = 6,
-  /** 设置RTM成功 */
-  rtmSetupSuccessed = 7,
-  /** 消息发送失败 */
-  messageFailed = 8,
   /** 状态流转异常 */
   stateMismatch = 9,
-  /** prepared了另一个roomId */
-  preparedRoomIdChanged = 10,
+  /** 开始加入rtc */
+  joinRTCStart = 10,
   /** 主叫呼叫成功 */
   remoteUserRecvCall = 99,
   /** 本地用户拒绝 */
@@ -163,27 +157,31 @@ export enum CallEvent {
   /** 远端用户挂断 */
   remoteHangup = 106,
   /** 远端用户加入RTC频道 */
-  remoteJoin = 107,
+  remoteJoined = 107,
   /** 远端用户离开RTC频道 */
-  remoteLeave = 108,
+  remoteLeft = 108,
   /** 本地用户取消呼叫 */
-  localCancel = 109,
+  localCancelled = 109,
   /** 远端用户取消呼叫 */
-  remoteCancel = 110,
+  remoteCancelled = 110,
   /** 本地用户加入RTC频道 */
-  localJoin = 111,
+  localJoined = 111,
   /** 本地用户离开RTC频道 */
-  localLeave = 112,
+  localLeft = 112,
   /** 收到远端首帧 */
   recvRemoteFirstFrame = 113,
-  /** 同样的主叫呼叫不同频道导致取消 */
-  cancelByCallerRecall = 114,
-  /** rtm超时断连 */
-  rtmLost = 115,
-  /** rtc出现错误 */
-  rtcOccurError = 116,
   /** 远端用户忙 */
   remoteCallBusy = 117,
+  /** 推送首帧视频帧成功 */
+  publishFirstLocalVideoFrame = 120,
+  /** 本地发起视频呼叫 */
+  localVideoCall = 140,
+  /** 本地发起音频呼叫 */
+  localAudioCall = 141,
+  /** 远端发起视频呼叫 */
+  remoteVideoCall = 142,
+  /** 远端发起音频呼叫 */
+  remoteAudioCall = 143,
 }
 
 /**
