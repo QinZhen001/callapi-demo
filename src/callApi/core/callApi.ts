@@ -51,7 +51,6 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
   private _callInfo: CallInfo = new CallInfo()
   private _callMessage = new CallMessage()
   private _rtcJoined: boolean = false
-  private _rtcPublished: boolean = false
   private _receiveRemoteFirstFrameDecoded = false
   private _cancelCallTimer: any = null
 
@@ -660,18 +659,12 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
 
   private async _rtcPublish() {
     if (this.localTracks.videoTrack && this.localTracks.audioTrack) {
-      if (!this._rtcPublished) {
-        this._rtcPublished = true
-        await this.rtcClient?.publish([
-          this.localTracks.videoTrack,
-          this.localTracks.audioTrack,
-        ])
-        logger.debug("rtc publish success")
-        this._callEventChange(CallEvent.publishFirstLocalVideoFrame)
-      } else {
-        const msg = "rtc has published"
-        logger.warn(msg)
-      }
+      await this.rtcClient?.publish([
+        this.localTracks.videoTrack,
+        this.localTracks.audioTrack,
+      ])
+      logger.debug("rtc publish success")
+      this._callEventChange(CallEvent.publishFirstLocalVideoFrame)
     } else {
       const msg = "videoTrack or audioTrack is undefined"
       logger.error(msg)
@@ -739,7 +732,6 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
     this.localTracks = {}
     this.remoteTracks = {}
     this._rtcJoined = false
-    this._rtcPublished = false
     // this._acceptOperate = false
     this._receiveRemoteFirstFrameDecoded = false
     this._resetView()
