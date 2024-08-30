@@ -660,12 +660,6 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
 
   private async _rtcPublish() {
     if (this.localTracks.videoTrack && this.localTracks.audioTrack) {
-      const connectionState = this.rtcClient?.connectionState
-      if (connectionState !== "CONNECTED") {
-        const msg = "rtcClient connectionState is not CONNECTED"
-        logger.warn(msg)
-        return
-      }
       if (!this._rtcPublished) {
         this._rtcPublished = true
         await this.rtcClient?.publish([
