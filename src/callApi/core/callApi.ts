@@ -164,13 +164,15 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
         ? CallAction.VideoCall
         : CallAction.AudioCall
     this._autoCancelCall(true)
-    this._rtcJoinAndPublish()
-    await this._publishMessage(remoteUserId, {
-      fromUserId: this.callConfig.userId,
-      remoteUserId,
-      fromRoomId: this.prepareConfig?.roomId,
-      message_action: callAction,
-    })
+    await Promise.all([
+      this._rtcJoinAndPublish(),
+      this._publishMessage(remoteUserId, {
+        fromUserId: this.callConfig.userId,
+        remoteUserId,
+        fromRoomId: this.prepareConfig?.roomId,
+        message_action: callAction,
+      })
+    ])
     this._callInfo.add("remoteUserRecvCall")
     this._callEventChange(CallEvent.remoteUserRecvCall)
     logger.debug(`call success,remoteUserId:${remoteUserId}`)
