@@ -181,13 +181,15 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
   async cancelCall() {
     this._callStateChange(CallStateType.prepared, CallStateReason.localCancel)
     this._callEventChange(CallEvent.localCancelled)
-    await this._publishMessage(this.remoteUserId, {
-      fromUserId: this.callConfig.userId,
-      remoteUserId: this.remoteUserId,
-      message_action: CallAction.Cancel,
-      cancelCallByInternal: RejectByInternal.External,
-    })
-    await this.destory()
+    await Promise.all([
+      this._publishMessage(this.remoteUserId, {
+        fromUserId: this.callConfig.userId,
+        remoteUserId: this.remoteUserId,
+        message_action: CallAction.Cancel,
+        cancelCallByInternal: RejectByInternal.External,
+      }),
+      this.destory()
+    ])
     logger.debug(`cancelCall success`)
   }
 
@@ -203,14 +205,16 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
       reason,
     )
     this._callEventChange(CallEvent.localRejected)
-    await this._publishMessage(remoteUserId, {
-      fromUserId: this.callConfig.userId,
-      remoteUserId,
-      message_action: CallAction.Reject,
-      rejectReason: reason,
-      rejectByInternal: RejectByInternal.External,
-    })
-    await this.destory()
+    await Promise.all([
+      this._publishMessage(remoteUserId, {
+        fromUserId: this.callConfig.userId,
+        remoteUserId,
+        message_action: CallAction.Reject,
+        rejectReason: reason,
+        rejectByInternal: RejectByInternal.External,
+      }),
+      this.destory()
+    ])
     logger.debug(`reject success,remoteUserId:${remoteUserId},reason:${reason}`)
   }
 
@@ -231,12 +235,14 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
       CallStateType.connecting,
       CallStateReason.localAccepted,
     )
-    await this._publishMessage(remoteUserId, {
-      fromUserId: this.callConfig.userId,
-      remoteUserId,
-      message_action: CallAction.Accept,
-    })
-    this._checkAppendView()
+    await Promise.all([
+      this._publishMessage(remoteUserId, {
+        fromUserId: this.callConfig.userId,
+        remoteUserId,
+        message_action: CallAction.Accept,
+      }),
+      this._checkAppendView()
+    ])
     logger.debug(`accept success,remoteUserId:${remoteUserId}`)
   }
 
@@ -247,12 +253,14 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
   async hangup(remoteUserId: number) {
     this._callStateChange(CallStateType.prepared, CallStateReason.localHangup)
     this._callEventChange(CallEvent.localHangup)
-    await this._publishMessage(remoteUserId, {
-      fromUserId: this.callConfig.userId,
-      remoteUserId,
-      message_action: CallAction.Hangup,
-    })
-    await this.destory()
+    await Promise.all([
+      this._publishMessage(remoteUserId, {
+        fromUserId: this.callConfig.userId,
+        remoteUserId,
+        message_action: CallAction.Hangup,
+      }),
+      this.destory()
+    ])
     logger.debug(`hangup success,remoteUserId:${remoteUserId}`)
   }
 
@@ -288,7 +296,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
   // ------- private -------
   private _listenMessagerManagerEvents() {
     this.callMessageManager.on("messageReceive", async (message) => {
-      logger.debug("message receive:", message)
+      logger.debug("message receive success:", message)
       const data = this._callMessage.decode(message)
       const { message_action } = data
       switch (message_action) {
@@ -458,6 +466,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
     try {
       // parallel create track and rtc join
       await Promise.all([this._createLocalTracks(), this._rtcJoin()])
+      // play local video track 
       this._playLocalVideo()
       // then publish track
       await this._rtcPublish()
@@ -679,7 +688,7 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
     try {
       const encodeMessage = this._callMessage.encode(message)
       await this.callMessageManager.sendMessage(uid.toString(), encodeMessage)
-      logger.debug(`message send uid:${uid} `, encodeMessage)
+      logger.debug(`message send success, uid:${uid} `, encodeMessage)
     } catch (e) {
       this._callError(
         CallErrorEvent.sendMessageFail,
@@ -732,7 +741,6 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
     this.localTracks = {}
     this.remoteTracks = {}
     this._rtcJoined = false
-    // this._acceptOperate = false
     this._receiveRemoteFirstFrameDecoded = false
     this._resetView()
     if (this._cancelCallTimer) {

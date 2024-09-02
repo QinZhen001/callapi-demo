@@ -36,6 +36,8 @@ function App() {
   const [firstFrameWaittingDisabled, setFirstFrameWaittingDisabled] = useState(false)
   const [state, setState] = useState(CallStateType.idle)
   const [eventInfo, setEventInfo] = useState<any>({})
+  // eventInfo.fromUserId => 指向本次通话的主叫方
+  // eventInfo.remoteUserId => 指向本次通话的被叫方
 
   useEffect(() => { init() }, [])
 
@@ -43,6 +45,15 @@ function App() {
   const role = useMemo(() => {
     return eventInfo?.remoteUserId == localUserId ? Role.Called : Role.Caller
   }, [eventInfo, localUserId])
+
+  useEffect(() => {
+    if (role == Role.Called) {
+      // 被叫自动设置remoteUserId
+      if (eventInfo.fromUserId) {
+        setRemoteUserId(eventInfo.fromUserId)
+      }
+    }
+  }, [role, eventInfo])
 
   const init = async () => {
     const token = await apiGenerateToken(localUserId)
@@ -121,9 +132,7 @@ function App() {
         }
       },
     )
-    callApi.on("callEventChanged", (event) => {
-      // handle call event if needed
-    })
+
     callApi.on("callError", (errorEvent, errorType, errorCode, errMessage) => {
       switch (errorType) {
         case CallErrorCodeType.normal:
