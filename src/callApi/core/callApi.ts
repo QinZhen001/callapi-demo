@@ -617,19 +617,16 @@ export class CallApi extends AGEventEmitter<CallApiEvents> {
             CallStateReason.callingTimeout,
           )
           this._callEventChange(isLocal ? CallEvent.callingTimeout : CallEvent.remoteCallingTimeout)
-          try {
-            await this._publishMessage(this.remoteUserId, {
+          await Promise.all([
+            this._publishMessage(this.remoteUserId, {
               fromUserId: this.callConfig.userId,
               remoteUserId: this.remoteUserId,
               message_action: CallAction.Cancel,
               cancelCallByInternal: RejectByInternal.Internal,
-            })
-            logger.debug(`auto cancelCall success`)
-          } catch (e: any) {
-            logger.error(`auto cancelCall failed! ${e?.message}`)
-            throw e
-          }
-          await this.destory()
+            }),
+            this.destory()
+          ])
+          logger.debug(`auto cancelCall success`)
         }
       }, time)
     }
